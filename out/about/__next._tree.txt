@@ -1,5 +1,5 @@
 :HL["/_next/static/chunks/02usadrux6us3.css","style"]
-:HL["/_next/static/chunks/11ff84v9qvqh6.css","style"]
+:HL["/_next/static/chunks/020lh9i8s8zs1.css","style"]
 :HL["/_next/static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["https://cdn.simpleicons.org/hp","image"]
 :HL["https://api.iconify.design/simple-icons/dell.svg?color=%230076CE","image"]
@@ -11,4 +11,4 @@
 :HL["https://api.iconify.design/logos/samsung.svg","image"]
 :HL["https://api.iconify.design/simple-icons/logitech.svg?color=%23000000","image"]
 :HL["https://api.iconify.design/logos/microsoft.svg","image"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"about","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"lDO2ANMUgr5c1ckuBvYQP"}
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"about","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"uYd-tpgNk6zrSr4pgAThm"}
