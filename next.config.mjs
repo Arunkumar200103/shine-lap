@@ -1,8 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',   // ✅ VERY IMPORTANT
+  output: 'export',        // ✅ Static export
+  trailingSlash: true,     // ✅ FIXES 404 on DirectAdmin
   images: {
-    unoptimized: true,
+    unoptimized: true,     // ✅ Required for static hosting
   },
 }
 
