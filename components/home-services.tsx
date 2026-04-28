@@ -1,12 +1,15 @@
 import Link from 'next/link';
-import { ArrowRight, Monitor, Printer, Camera, Headset } from 'lucide-react';
-import { services } from '@/lib/constants';
+import { ArrowRight, Monitor, Printer, Camera, Headset, Settings, ShieldCheck, Wrench } from 'lucide-react';
+import { getServices } from '@/lib/api';
 
 const iconComponents: Record<string, React.ReactNode> = {
   Monitor: <Monitor size={28} />,
   Printer: <Printer size={28} />,
   Camera: <Camera size={28} />,
   Headset: <Headset size={28} />,
+  Repair: <Wrench size={28} />,
+  Maintenance: <Settings size={28} />,
+  Security: <ShieldCheck size={28} />,
 };
 
 const iconColors: Record<string, string> = {
@@ -14,9 +17,14 @@ const iconColors: Record<string, string> = {
   Printer: 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white',
   Camera: 'bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white',
   Headset: 'bg-violet-50 text-violet-600 group-hover:bg-violet-600 group-hover:text-white',
+  Repair: 'bg-red-50 text-red-600 group-hover:bg-red-600 group-hover:text-white',
+  Maintenance: 'bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white',
+  Security: 'bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white',
 };
 
-export function HomeServices() {
+export async function HomeServices() {
+  const services = await getServices().catch(() => []);
+
   return (
     <section className="py-20 bg-muted/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -31,35 +39,41 @@ export function HomeServices() {
 
         {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {services.map((service, idx) => (
+          {services.map((service) => (
             <Link
               key={service.id}
-              href={`/services/${service.slug}`}
+              href={`/services/${service.id}`}
               className="group relative"
             >
               <div className="relative bg-white p-8 rounded-2xl shadow-md hover:shadow-2xl transition-all duration-400 h-full flex flex-col card-hover border border-transparent hover:border-primary/10">
                 {/* Icon */}
-                <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-6 transition-all duration-300 ${iconColors[service.icon] || 'bg-primary/10 text-primary'}`}>
-                  {iconComponents[service.icon] || <Monitor size={28} />}
+                <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-6 transition-all duration-300 ${iconColors[service.category] || 'bg-primary/10 text-primary'}`}>
+                  {iconComponents[service.category] || <Monitor size={28} />}
                 </div>
 
                 {/* Content */}
-                <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">{service.title}</h3>
-                <p className="text-foreground/60 flex-grow mb-5 text-sm leading-relaxed">{service.shortDescription}</p>
+                <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">{service.name}</h3>
+                <p className="text-foreground/60 flex-grow mb-5 text-sm leading-relaxed">{service.description}</p>
 
-                {/* Features Preview */}
-                <ul className="space-y-1.5 mb-5">
-                  {service.features.slice(0, 3).map((f, i) => (
-                    <li key={i} className="text-xs text-foreground/50 flex items-center gap-2">
-                      <span className="w-1 h-1 bg-primary rounded-full flex-shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
+                {/* Service Details */}
+                <div className="space-y-2 mb-6">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-foreground/40 uppercase tracking-wider font-bold">Estimated Time</span>
+                    <span className="text-foreground/70 font-semibold">{service.estimatedTime}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-foreground/40 uppercase tracking-wider font-bold">Warranty</span>
+                    <span className="text-foreground/70 font-semibold">{service.warranty}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-foreground/40 uppercase tracking-wider font-bold">Price From</span>
+                    <span className="text-primary font-bold text-sm">₹{parseFloat(service.price).toLocaleString('en-IN')}</span>
+                  </div>
+                </div>
 
                 {/* Link */}
-                <div className="flex items-center text-primary font-semibold text-sm group-hover:gap-2 transition-all mt-auto">
-                  Learn More
+                <div className="flex items-center text-primary font-semibold text-sm group-hover:gap-2 transition-all mt-auto pt-4 border-t border-muted/50">
+                  Book Service
                   <ArrowRight size={16} className="ml-1 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>

@@ -1,4 +1,8 @@
-const brandIcons = [
+import { getBrands } from '@/lib/api';
+import { getImageUrl } from '@/lib/api';
+
+// Fallback static brand icons (used alongside API brands)
+const staticBrandIcons = [
   { name: 'HP', src: 'https://cdn.simpleicons.org/hp' },
   { name: 'Dell', src: 'https://api.iconify.design/simple-icons/dell.svg?color=%230076CE' },
   { name: 'Lenovo', src: 'https://cdn.simpleicons.org/lenovo' },
@@ -11,7 +15,26 @@ const brandIcons = [
   { name: 'Microsoft', src: 'https://api.iconify.design/logos/microsoft.svg' },
 ];
 
-export function Brands() {
+export async function Brands() {
+  let apiBrands: { name: string; src: string }[] = [];
+
+  try {
+    const brands = await getBrands();
+    apiBrands = brands.map(b => ({
+      name: b.name,
+      src: getImageUrl(b.icon),
+    }));
+  } catch (error) {
+    console.error('Failed to fetch brands:', error);
+  }
+
+  // Merge: API brands first, then static brands (deduplicated)
+  const apiBrandNames = new Set(apiBrands.map(b => b.name.toLowerCase()));
+  const mergedBrands = [
+    ...apiBrands,
+    ...staticBrandIcons.filter(b => !apiBrandNames.has(b.name.toLowerCase())),
+  ];
+
   return (
     <section className="py-16 bg-muted/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -22,7 +45,7 @@ export function Brands() {
 
         <div className="overflow-hidden w-full relative mask-edges py-4">
           <div className="flex w-max animate-marquee">
-            {[...brandIcons, ...brandIcons, ...brandIcons, ...brandIcons].map((brand, idx) => (
+            {[...mergedBrands, ...mergedBrands, ...mergedBrands, ...mergedBrands].map((brand, idx) => (
               <div
                 key={`${brand.name}-${idx}`}
                 className="w-44 flex-shrink-0 group bg-white rounded-xl p-6 mx-4 flex items-center justify-center shadow-sm hover:shadow-md transition-all duration-300 border border-transparent hover:border-primary/10 h-24"

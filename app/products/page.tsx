@@ -1,28 +1,40 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Laptop, Monitor, Printer, Camera, Wifi, Keyboard, ArrowRight } from 'lucide-react';
+import { ArrowRight, Layers, Tag, Box, Keyboard } from 'lucide-react';
 import { PageHeader } from '@/components/page-header';
 import { ProductCard } from '@/components/product-card';
+import { AccessoryCard } from '@/components/accessory-card';
 import { CTABanner } from '@/components/cta-banner';
-import { products, productCategories } from '@/lib/constants';
+import { getCategories, getProducts, getBrands, getAccessories, getImageUrl } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Products',
   description: 'Browse our wide range of IT products — laptops, desktops, printers, CCTV systems, networking equipment, and accessories.',
 };
 
-const iconComponents: Record<string, React.ReactNode> = {
-  Laptop: <Laptop size={24} />,
-  Monitor: <Monitor size={24} />,
-  Printer: <Printer size={24} />,
-  Camera: <Camera size={24} />,
-  Wifi: <Wifi size={24} />,
-  Keyboard: <Keyboard size={24} />,
-};
+export default async function ProductsPage() {
+  let categories = [];
+  let products = [];
+  let brands: { id: number; name: string; category: number }[] = [];
+  let accessories = [];
 
-export default function ProductsPage() {
-  const featuredProducts = products.filter(p => p.badge).slice(0, 8);
+  try {
+    [categories, products, brands, accessories] = await Promise.all([
+      getCategories(),
+      getProducts(),
+      getBrands(),
+      getAccessories(),
+    ]);
+  } catch (error) {
+    console.error('Failed to fetch data:', error);
+  }
+
+  // Brand lookup
+  const brandMap = new Map(brands.map(b => [b.id, b]));
+
+  // Category icons
+  const categoryIcons = [Layers, Tag, Box];
 
   return (
     <main>
@@ -43,53 +55,102 @@ export default function ProductsPage() {
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">Product Categories</h2>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {productCategories.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/products/${cat.id}`}
-                className="group relative bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 text-center card-hover border border-transparent hover:border-primary/10 overflow-hidden"
-              >
-                {/* Background Image */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-300">
-                  <Image src={cat.image} alt="" fill className="object-cover" />
-                </div>
-
-                <div className="relative z-10">
-                  <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4 group-hover:bg-primary group-hover:text-white transition-all duration-300 group-hover:scale-110">
-                    {iconComponents[cat.icon] || <Monitor size={24} />}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {categories.map((cat, idx) => {
+              const IconComponent = categoryIcons[idx % categoryIcons.length];
+              return (
+                <Link
+                  key={cat.id}
+                  href={`/products/${cat.id}`}
+                  className="group relative bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 text-center card-hover border border-transparent hover:border-primary/10 overflow-hidden"
+                >
+                  {/* Background Image */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-300">
+                    <Image src={getImageUrl(cat.image)} alt="" fill className="object-cover" />
                   </div>
-                  <h3 className="font-bold text-foreground text-sm group-hover:text-primary transition-colors">{cat.name}</h3>
-                  <p className="text-xs text-muted-foreground mt-1 hidden md:block">{cat.description.split(' ').slice(0, 4).join(' ')}</p>
-                </div>
-              </Link>
-            ))}
+
+                  <div className="relative z-10">
+                    <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4 group-hover:bg-primary group-hover:text-white transition-all duration-300 group-hover:scale-110 overflow-hidden">
+                      {cat.image ? (
+                        <Image
+                          src={getImageUrl(cat.image)}
+                          alt={cat.name}
+                          width={40}
+                          height={40}
+                          className="object-contain rounded-lg"
+                        />
+                      ) : (
+                        <IconComponent size={28} />
+                      )}
+                    </div>
+                    <h3 className="font-bold text-foreground text-base group-hover:text-primary transition-colors">{cat.name}</h3>
+                    <p className="text-xs text-muted-foreground mt-1">{cat.description}</p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Featured Products */}
-      <section className="py-16 bg-muted/20">
+      {/* Accessories Section */}
+      {accessories.length > 0 && (
+        <section className="py-16 bg-muted/20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-end justify-between mb-12">
+              <div>
+                <p className="text-sm text-primary font-semibold tracking-wider uppercase mb-2">Peripherals</p>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground">Accessories</h2>
+              </div>
+              <div className="bg-primary/10 p-3 rounded-2xl text-primary hidden sm:block">
+                <Keyboard size={32} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {accessories.map((accessory) => (
+                <AccessoryCard key={accessory.id} accessory={accessory} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* All Products */}
+      <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <p className="text-sm text-primary font-semibold tracking-wider uppercase mb-2">Handpicked for You</p>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">Featured Products</h2>
-            <p className="text-foreground/60 mt-2">Our most popular and best-selling products</p>
+            <p className="text-sm text-primary font-semibold tracking-wider uppercase mb-2">Our Collection</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground">All Products</h2>
+            <p className="text-foreground/60 mt-2">Showing {products.length} products</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+            {products.map((product) => {
+              const brand = brandMap.get(product.brand);
+              return (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  brandName={brand?.name}
+                  categorySlug={brand ? String(brand.category) : undefined}
+                />
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* All Products by Category */}
-      {productCategories.map((category) => {
-        const categoryProducts = products.filter(p => p.category === category.id);
+      {/* Products by Category */}
+      {categories.map((category) => {
+        // Find brands in this category, then products for those brands
+        const categoryBrandIds = brands.filter(b => b.category === category.id).map(b => b.id);
+        const categoryProducts = products.filter(p => categoryBrandIds.includes(p.brand));
+
+        if (categoryProducts.length === 0) return null;
+
         return (
-          <section key={category.id} className="py-16 even:bg-muted/20" id={category.id}>
+          <section key={category.id} className="py-16 even:bg-muted/20" id={`category-${category.id}`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex items-end justify-between mb-8">
                 <div>
@@ -106,9 +167,17 @@ export default function ProductsPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {categoryProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
+                {categoryProducts.map((product) => {
+                  const brand = brandMap.get(product.brand);
+                  return (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      brandName={brand?.name}
+                      categorySlug={String(category.id)}
+                    />
+                  );
+                })}
               </div>
 
               <div className="mt-6 text-center md:hidden">

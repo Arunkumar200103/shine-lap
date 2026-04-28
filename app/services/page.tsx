@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowRight, Monitor, Printer, Camera, Headset, CheckCircle } from 'lucide-react';
+import { ArrowRight, Monitor, Printer, Camera, Headset, CheckCircle, Wrench, Settings, ShieldCheck } from 'lucide-react';
 import { PageHeader } from '@/components/page-header';
 import { CTABanner } from '@/components/cta-banner';
-import { services } from '@/lib/constants';
+import { getServices } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Our Services',
@@ -15,6 +15,9 @@ const iconComponents: Record<string, React.ReactNode> = {
   Printer: <Printer size={32} />,
   Camera: <Camera size={32} />,
   Headset: <Headset size={32} />,
+  Repair: <Wrench size={32} />,
+  Maintenance: <Settings size={32} />,
+  Security: <ShieldCheck size={32} />,
 };
 
 const iconColors: Record<string, string> = {
@@ -22,9 +25,14 @@ const iconColors: Record<string, string> = {
   Printer: 'bg-emerald-100 text-emerald-600',
   Camera: 'bg-amber-100 text-amber-600',
   Headset: 'bg-violet-100 text-violet-600',
+  Repair: 'bg-red-100 text-red-600',
+  Maintenance: 'bg-indigo-100 text-indigo-600',
+  Security: 'bg-orange-100 text-orange-600',
 };
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const services = await getServices().catch(() => []);
+
   return (
     <main>
       <PageHeader
@@ -49,24 +57,30 @@ export default function ServicesPage() {
               >
                 {/* Content Side */}
                 <div className={idx % 2 !== 0 ? 'lg:order-2' : ''}>
-                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 ${iconColors[service.icon] || 'bg-primary/10 text-primary'}`}>
-                    {iconComponents[service.icon] || <Monitor size={32} />}
+                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 ${iconColors[service.category] || 'bg-primary/10 text-primary'}`}>
+                    {iconComponents[service.category] || <Monitor size={32} />}
                   </div>
-                  <h2 className="text-3xl font-bold text-foreground mb-3">{service.title}</h2>
+                  <h2 className="text-3xl font-bold text-foreground mb-3">{service.name}</h2>
                   <p className="text-foreground/60 leading-relaxed mb-6">{service.description}</p>
 
                   {/* Features */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
-                    {service.features.map((feature, i) => (
-                      <div key={i} className="flex items-start gap-2.5">
-                        <CheckCircle size={18} className="text-primary flex-shrink-0 mt-0.5" />
-                        <span className="text-sm text-foreground/70">{feature}</span>
-                      </div>
-                    ))}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+                    <div className="flex items-center gap-2">
+                      <Settings size={18} className="text-primary" />
+                      <span className="text-sm font-semibold">{service.estimatedTime}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck size={18} className="text-primary" />
+                      <span className="text-sm font-semibold">{service.warranty}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Tag size={18} className="text-primary" />
+                      <span className="text-sm font-bold text-primary">From ₹{parseFloat(service.price).toLocaleString('en-IN')}</span>
+                    </div>
                   </div>
 
                   <Link
-                    href={`/services/${service.slug}`}
+                    href={`/services/${service.id}`}
                     className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 transition-all font-semibold text-sm group shadow-md shadow-primary/20"
                   >
                     View Details
@@ -76,20 +90,12 @@ export default function ServicesPage() {
 
                 {/* Visual Side */}
                 <div className={`${idx % 2 !== 0 ? 'lg:order-1' : ''}`}>
-                  <div className="relative bg-gradient-to-br from-muted/50 to-muted/30 rounded-3xl p-8 lg:p-12">
-                    {/* Process Steps */}
-                    <div className="space-y-4">
-                      {service.process.map((step, i) => (
-                        <div key={i} className="flex gap-4 bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            <span className="text-sm font-bold text-primary">{i + 1}</span>
-                          </div>
-                          <div>
-                            <p className="font-bold text-foreground text-sm">{step.step}</p>
-                            <p className="text-foreground/50 text-xs">{step.desc}</p>
-                          </div>
-                        </div>
-                      ))}
+                  <div className="relative bg-gradient-to-br from-muted/50 to-muted/30 rounded-3xl p-8 lg:p-12 overflow-hidden min-h-[300px] flex items-center justify-center">
+                    <div className="absolute inset-0 opacity-10 flex items-center justify-center">
+                       {iconComponents[service.category] || <Monitor size={200} />}
+                    </div>
+                    <div className="relative z-10 text-center">
+                      <p className="text-2xl font-bold text-foreground/20 uppercase tracking-widest">{service.category}</p>
                     </div>
                   </div>
                 </div>

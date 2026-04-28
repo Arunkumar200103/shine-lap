@@ -1,9 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',        // ✅ Static export
-  trailingSlash: true,     // ✅ FIXES 404 on DirectAdmin
+  trailingSlash: true,
   images: {
-    unoptimized: true,     // ✅ Required for static hosting
+    unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.ngrok-free.app',
+      },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
+        port: '8000',
+      },
+    ],
   },
 }
 

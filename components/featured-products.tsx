@@ -1,10 +1,26 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { products } from '@/lib/constants';
+import { getProducts, getBrands } from '@/lib/api';
 import { ProductCard } from './product-card';
 
-export function FeaturedProducts() {
-  const featured = products.filter(p => p.badge).slice(0, 4);
+export async function FeaturedProducts() {
+  let products = [];
+  let brands: { id: number; name: string }[] = [];
+
+  try {
+    [products, brands] = await Promise.all([getProducts(), getBrands()]);
+  } catch (error) {
+    console.error('Failed to fetch featured products:', error);
+    return null; // Don't render section if API is down
+  }
+
+  if (products.length === 0) return null;
+
+  // Show up to 4 products as featured
+  const featured = products.slice(0, 4);
+
+  // Build brand name lookup
+  const brandMap = new Map(brands.map(b => [b.id, b.name]));
 
   return (
     <section className="py-20 bg-muted/20">
@@ -33,7 +49,10 @@ export function FeaturedProducts() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {featured.map((product, idx) => (
             <div key={product.id} className={`animate-fade-in-up delay-${(idx + 1) * 100}`}>
-              <ProductCard product={product} />
+              <ProductCard
+                product={product}
+                brandName={brandMap.get(product.brand) || undefined}
+              />
             </div>
           ))}
         </div>
